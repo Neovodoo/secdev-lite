@@ -7,11 +7,10 @@
 
 ## Паспорт студента
 
-- **ФИО:** TODO: Иванов Иван Иванович
-- **Группа:** TODO: БПИ-20-01
-- **Контакт:** TODO: `email@uni.ru` / `@telegram`
-- **Опционально: свой проект (BYO):** TODO: краткое название и ссылка
-  _(можно работать на учебном шаблоне - это ок)_
+- **ФИО:** Аношенко Даниил Сергеевич
+- **Группа:** МСПИН241
+- **Контакт:** TODO: `dsanoshenko@edu.hse.ru` / `@Neovoodoo`
+
 
 ---
 
@@ -50,7 +49,7 @@
 - DV: <https://github.com/hse-secdev-2025-fall/secdev-lite-docs/blob/main/rubrics/rubric_DV.md>
 - DS: <https://github.com/hse-secdev-2025-fall/secdev-lite-docs/blob/main/rubrics/rubric_DS.md>
 
-> Если ссылки не открываются - зайди в репозиторий **secdev-lite-docs** → `rubrics/`.
+
 
 ---
 
