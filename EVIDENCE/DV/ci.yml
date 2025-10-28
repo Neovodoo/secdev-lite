@@ -1,0 +1,91 @@
+name: ci
+
+on:
+  push:
+    paths-ignore:
+      - 'EVIDENCE/**'
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - 'EVIDENCE/**'
+      - 'README.md'
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  APP_NAME: ${{ secrets.APP_NAME }}
+  PORT: ${{ secrets.PORT }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Grep secrets
+        run: git grep -n "SECRET" > EVIDENCE/grep-secrets.txt || true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Create DB directory
+        run: mkdir data
+
+      - name: Init DB
+        run: python scripts/init_db.py
+
+      - name: Collect CI log
+        if: always()
+        run: |
+          echo "===== CI RUN INFO =====" > ci-log.txt
+          echo "Date: $(date)" >> ci-log.txt
+          echo "Commit: $GITHUB_SHA" >> ci-log.txt
+          echo "Branch: $GITHUB_REF" >> ci-log.txt
+          echo "Python: ${{ matrix.python-version }}" >> ci-log.txt
+          echo "========================" >> ci-log.txt
+
+      - name: Run tests with coverage
+        run: |
+          mkdir -p EVIDENCE/S08
+          pytest -q --junitxml=test-report.xml --cov=app --cov-report xml:coverage.xml
+        continue-on-error: false
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-s08-${{ matrix.python-version }}
+          path: |
+            test-report.xml
+            ci-log.txt
+            coverage.xml
+          if-no-files-found: warn
+          retention-days: 14
